@@ -8,8 +8,11 @@ namespace MiniProject
     public static class Vars
     {
         public static float pCap, pDis, pInert = 0.5f;
+        public static float initDropletWater;
+        public static float initDropletvelocity;
         public static float[] heights;
         public static int imgRes;
+        public static int erosionRadius = 2;
     }
 
     public class SimErosion
@@ -45,6 +48,7 @@ namespace MiniProject
                     d.x += d.dir.x;
                     d.y += d.dir.y;
 
+                    // stop simulating droplet if it doesn't move or if it gets out of bounds
                     if ((d.dir.x == 0 && d.dir.y == 0) || (d.x < 0 || d.x >= (Vars.imgRes - 1) || d.y < 0 || d.y >= (Vars.imgRes - 1)))
                         break;
 
@@ -56,8 +60,16 @@ namespace MiniProject
                     float heightDiff = newHeight - dHeight;
 
                     // droplet is moving uphill
-                    if (heightDiff < 0)
+                    if (heightDiff > 0)
                     {
+                        // Deposit sediment
+
+                    } else
+                    {
+                        // Erode all points inside the radius
+                        // get the upper left corner of the enclosing quad
+                        applyErosion(d);
+
 
                     }
                 }
@@ -90,11 +102,33 @@ namespace MiniProject
                 (x1y - xy) * (1 - d.v) + (x1y1 - xy1) * d.v,
                 (xy1 - xy) * (1 - d.u) + (x1y1 - x1y) * d.u);
         }
+
+        void applyErosion(Droplet d, int mapSize)
+        {
+            int xGrid = (int)Math.Floor(d.x), yGrid = (int)Math.Floor(d.y);
+            float[] weights = new float[4 * Vars.erosionRadius * Vars.erosionRadius];
+            int index = 0;
+            for (int x = -radius; x <= Vars.erosionRadius; ++x)
+            {
+                for (int y = -radius; y <= Vars.erosionRadius; ++y)
+                {
+                    int coordX = xGrid + x;
+                    int coordY = yGrid + y;
+
+                    if (coordX > 0 && coordX < mapSize && coordY > 0 && coordY < mapSize)
+                    {
+                        weights[index++] = Math.Max(0, Vars.erosionRadius - Math.Sqrt(x * x + y * y));
+                    }
+                }
+            }
+        }
+
     }
 
     public class Droplet
     {
-        public float x, y, u = 0, v = 0;
+        public float x, y, u = 0, v = 0, water = Vars.initDropletWater, velocity = Vars.initDropletvelocity;
+        public float sediment = 0;
         public Vector2 dir = new Vector2(0, 0);
 
         // Start is called before the first frame update
