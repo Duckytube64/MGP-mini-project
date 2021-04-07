@@ -42,8 +42,11 @@ namespace MiniProject
                     d.dir.Normalize();
 
                     // update position
-                    d.x += d.dir[0];
-                    d.y += d.dir[1];
+                    d.x += d.dir.x;
+                    d.y += d.dir.y;
+
+                    if ((d.dir.x == 0 && d.dir.y == 0) || (d.x < 0 || d.x >= (Vars.imgRes - 1) || d.y < 0 || d.y >= (Vars.imgRes - 1)))
+                        break;
 
                     // compute new droplet height
                     float newHeight = 0;
