@@ -16,7 +16,6 @@ namespace MiniProject
     {
         public int nrDroplets = 100000;
         public int nrIterations = 10;
-
         // Start is called before the first frame update
         public SimErosion(float[] Heights, int ImgRes)
         {
@@ -32,16 +31,32 @@ namespace MiniProject
                 Droplet d = new Droplet();
                 for (int j = 0; j < nrIterations; j++)
                 {
-                    int xGrid = (int)Math.Floor(d.x), yGrid = (int)Math.Floor(d.y);
-                    float xdiff = d.x - xGrid, ydiff = d.y - yGrid;
-                    float xy = Vars.heights[xGrid * Vars.imgRes + yGrid],
-                        x1y = Vars.heights[(xGrid + 1) * Vars.imgRes + yGrid],
-                        xy1 = Vars.heights[xGrid * Vars.imgRes + yGrid + 1],
-                        x1y1 = Vars.heights[(xGrid + 1) * Vars.imgRes + yGrid + 1];
-                    float dHeight = (x1y1 * xdiff + xy1 * (1 - xdiff)) * ydiff + (xy1 * xdiff + xy * (1 - xdiff)) * (1 - ydiff); // Bilinear interpolation for droplet height
-                    Vector2 gxy = new Vector2(
-                        (x1y - xy) * (1 - d.v) + (x1y1 - xy1) * d.v,
-                        (xy1 - xy) * (1 - d.u) + (x1y1 - x1y) * d.u);
+                    // get droplet height by bilinear interpolation of the enclosing quad
+                    float dHeight = 0;
+                    Vector2 gradient = new Vector2(0, 0);
+                    computeGradientHeight(Vars.heights, Vars.imgRes, ref d, ref dHeight, ref gradient);
+
+                    // get new direction and normalize
+                    d.dir.x = (d.dir.x * Vars.pInert - gradient.x * (1 - Vars.pInert));
+                    d.dir.y = (d.dir.y * Vars.pInert - gradient.y * (1 - Vars.pInert));
+                    d.dir.Normalize();
+
+                    // update position
+                    d.x += d.dir[0];
+                    d.y += d.dir[1];
+
+                    // compute new droplet height
+                    float newHeight = 0;
+                    Vector2 newGradient = new Vector2(0, 0);
+                    computeGradientHeight(Vars.heights, Vars.imgRes, ref d, ref newHeight, ref newGradient);
+
+                    float heightDiff = newHeight - dHeight;
+
+                    // droplet is moving uphill
+                    if (heightDiff < 0)
+                    {
+
+                    }
                 }
             }
         }
@@ -51,11 +66,33 @@ namespace MiniProject
             return Vars.heights;
         }
 
+        void computeGradientHeight(float[] mapHeights, int mapSize, ref Droplet d, ref float dropletHeight, ref Vector2 gradient)
+        {
+            // get the upper left corner of the enclosing quad
+            int xGrid = (int)Math.Floor(d.x), yGrid = (int)Math.Floor(d.y);
+            
+            // get droplet position inside the quad
+            d.u = d.x - xGrid;
+            d.v = d.y - yGrid;
+
+            // get the heights of the quad corners
+            float xy = mapHeights[xGrid * mapSize + yGrid];
+            float x1y = mapHeights[(xGrid + 1) * mapSize + yGrid];
+            float xy1 = mapHeights[xGrid * mapSize + yGrid + 1];
+            float x1y1 = mapHeights[(xGrid + 1) * mapSize + yGrid + 1];
+
+            // get droplet height by bilinear interpolation of the enclosing quad corners
+            dropletHeight = (x1y1 * d.u + xy1 * (1 - d.u)) * d.v + (xy1 * d.u + xy * (1 - d.v)) * (1 - d.v);
+            gradient = new Vector2(
+                (x1y - xy) * (1 - d.v) + (x1y1 - xy1) * d.v,
+                (xy1 - xy) * (1 - d.u) + (x1y1 - x1y) * d.u);
+        }
     }
 
     public class Droplet
     {
         public float x, y, u = 0, v = 0;
+        public Vector2 dir = new Vector2(0, 0);
 
         // Start is called before the first frame update
         public Droplet()
