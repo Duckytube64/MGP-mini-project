@@ -35,8 +35,7 @@ namespace MiniProject
 
             updateMesh(heights);
 
-            Vars.heights = heights;
-            simErosion = new SimErosion();
+            simErosion = new SimErosion(heights, imgRes);
         }
 
         void updateMesh(float[] newHeights)

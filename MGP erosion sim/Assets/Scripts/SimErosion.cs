@@ -18,9 +18,10 @@ namespace MiniProject
         public int nrIterations = 10;
 
         // Start is called before the first frame update
-        void Start()
+        public SimErosion(float[] Heights, int ImgRes)
         {
-            
+            Vars.heights = Heights;
+            Vars.imgRes = ImgRes;
         }
 
         // Update is called once per frame
@@ -57,11 +58,11 @@ namespace MiniProject
         public float x, y, u = 0, v = 0;
 
         // Start is called before the first frame update
-        void Start()
+        public Droplet()
         {
             System.Random r = new System.Random();
-            x = (float)r.NextDouble() * Vars.imgRes;
-            y = (float)r.NextDouble() * Vars.imgRes;
+            x = (float)r.NextDouble() * (Vars.imgRes - 1);
+            y = (float)r.NextDouble() * (Vars.imgRes - 1);
         }
     }
 }

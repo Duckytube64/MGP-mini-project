@@ -1,0 +1,9 @@
+v = vold
+sediment ~ 2.7 g/cm3
+water = 1g/cm3
+m = mw + ms = water * 1 + sediment * 2.7 (assuming water and sediment are expressed in cm3)
+g = 9.81 * m
+gravity vector gv = (0,g,0)
+3d vector 'o' parallel with surface:
+gv_par = project gv onto o
+p_inertia = 1 - project norm(v + gv_par) onto norm(gv_par)

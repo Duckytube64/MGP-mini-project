@@ -1,0 +1,3 @@
+- calculate droplet inertia factor
+- create smooth 'mountain' heightmaps to see erosion effect
+- menu for selecting map?
