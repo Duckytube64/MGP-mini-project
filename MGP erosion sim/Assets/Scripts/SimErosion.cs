@@ -18,14 +18,14 @@ namespace MiniProject
         public int nrIterations = 10;
 
         // Start is called before the first frame update
-        void Start(float[] Heights)
+        void Start()
         {
-            Vars.heights = Heights;
+            
         }
 
         // Update is called once per frame
-        void Update()
-        {
+        public void Update()
+        {            
             for (int i = 0; i < nrDroplets; i++)
             {
                 Droplet d = new Droplet();
@@ -44,6 +44,12 @@ namespace MiniProject
                 }
             }
         }
+
+        public float[] getUpdatedHeights()
+        {
+            return Vars.heights;
+        }
+
     }
 
     public class Droplet
