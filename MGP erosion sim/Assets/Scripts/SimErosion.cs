@@ -7,7 +7,7 @@ namespace MiniProject
 {
     public static class Vars
     {
-        public static float pCap, pDis, pInert = 0.5f;
+        public static float pCap, pDis, pInert = 0.5f, pRadius;
         public static float[] heights;
         public static int imgRes;
     }
@@ -53,7 +53,7 @@ namespace MiniProject
                     float heightDiff = newHeight - dHeight;
 
                     // droplet is moving uphill
-                    if (heightDiff < 0)
+                    if (heightDiff > 0)
                     {
 
                     }
@@ -93,8 +93,7 @@ namespace MiniProject
     {
         public float x, y, u = 0, v = 0;
         public Vector2 dir = new Vector2(0, 0);
-
-        // Start is called before the first frame update
+        
         public Droplet()
         {
             System.Random r = new System.Random();
