@@ -7,7 +7,7 @@ namespace MiniProject
 {
     public static class Vars
     {
-        public static float pInertia = 0.5f, pRadius, pDeposition, pEvaporation = 0.01f, pMinSlope = 0.05f, pCapacity = 8, pErosion = 0.1f, pGravity=10;
+        public static float pInertia = 0.5f, pDeposition, pEvaporation = 0.01f, pMinSlope = 0.05f, pCapacity = 8, pErosion = 0.1f, pGravity=10;
         public static int pRadius = 2;
         public static float initDropletWater = 1;
         public static float initDropletvelocity = 1;
