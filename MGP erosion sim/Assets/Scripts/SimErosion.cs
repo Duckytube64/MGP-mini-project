@@ -7,7 +7,7 @@ namespace MiniProject
 {
     public static class Vars
     {
-        public static float pInertia = 0.5f, pDeposition, pEvaporation = 0.01f, pMinSlope = 0.05f, pCapacity = 8, pErosion = 0.1f, pGravity=10;
+        public static float pInertia = 0.5f, pDeposition, pEvaporation = 0.01f, pMinSlope = 0.05f, pCapacity = 0.01f, pErosion = 0.1f, pGravity=10;
         public static int pRadius = 2;
         public static float initDropletWater = 1;
         public static float initDropletvelocity = 1;
@@ -15,7 +15,7 @@ namespace MiniProject
         public static int imgRes;
         public static int erosionRadius = 2;
         public static int dropletsPerUpdate = 1000, totalDroplets = 100000;
-        public static int nrIterations = 10;
+        public static int nrIterations = 30;
     }
 
     public class SimErosion
@@ -62,15 +62,15 @@ namespace MiniProject
                     computeGradientHeight(Vars.heights, ref d, ref newHeight, ref newGradient);
 
                     float heightDiff = newHeight - dHeight;
+                    float c = Math.Max(-heightDiff, Vars.pMinSlope) * d.velocity * d.water * Vars.pCapacity;
 
-
-                    Console.WriteLine("Height Diff: %f", heightDiff);
-                    // droplet is moving uphill
-                    if (heightDiff > 0)
+                    // droplet is moving uphill or has more sediment than its capacity
+                    if (d.sediment > c || heightDiff > 0)
                     {
                         // Deposit sediment
                         int xGrid = (int)Math.Floor(d.x), yGrid = (int)Math.Floor(d.y);
-                        float depositAmount = Math.Min(heightDiff, d.sediment);
+                        
+                        float depositAmount = heightDiff > 0 ? Math.Min(heightDiff, d.sediment) : (d.sediment - c) * Vars.pDeposition;
                         updatedHeights[xGrid * Vars.imgRes + yGrid] += depositAmount * (1 - d.u) * (1 - d.v);
                         updatedHeights[(xGrid + 1) * Vars.imgRes + yGrid] += depositAmount * (1 - d.u) * d.v;
                         updatedHeights[xGrid * Vars.imgRes + yGrid + 1] += depositAmount * d.u * (1 - d.v);
@@ -79,14 +79,11 @@ namespace MiniProject
                     } else
                     {
                         // Erode all points inside the radius
-                        // get the upper left corner of the enclosing quad
-                        float c = Math.Max(-heightDiff, Vars.pMinSlope) * d.velocity * d.water * Vars.pCapacity;
                         float erosionAmount = Math.Min((c - d.sediment) * Vars.pErosion, -heightDiff);
                         applyErosion(ref d, Vars.erosionRadius, ref updatedHeights, erosionAmount);
                     }
 
                     // update droplet velocity and water amount
-                    // TODO: debug velocity update
                     d.velocity = (float)Math.Sqrt(Math.Max(d.velocity * d.velocity + heightDiff * Vars.pGravity, 0));
                     d.water = d.water * (1 - Vars.pEvaporation);
                 }
@@ -155,7 +152,7 @@ namespace MiniProject
                 weights[i] /= weighSum;
                 
                 float pointErosion = (float)(erosionAmount * weights[i]);
-                int pointIndex = (int)(coords[i].x * mapSize + coords[i].y);
+                int pointIndex = (int)(coords[i].x * Vars.imgRes + coords[i].y);
                 if (map[pointIndex] < pointErosion)
                 {
                     d.sediment += map[pointIndex];
