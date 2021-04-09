@@ -7,9 +7,10 @@ namespace MiniProject
 {
     public static class Vars
     {
-        public static float pInertia = 0.5f, pRadius, pDeposition, pEvaporation, pMinSlope, pCapacity, pErosion;
-        public static float initDropletWater;
-        public static float initDropletvelocity;
+        public static float pInertia = 0.5f, pRadius, pDeposition, pEvaporation = 0.01f, pMinSlope = 0.05f, pCapacity = 8, pErosion = 0.1f, pGravity=10;
+        public static int pRadius = 2;
+        public static float initDropletWater = 1;
+        public static float initDropletvelocity = 1;
         public static float[] heights;
         public static int imgRes;
         public static int erosionRadius = 2;
@@ -61,8 +62,9 @@ namespace MiniProject
                     computeGradientHeight(Vars.heights, ref d, ref newHeight, ref newGradient);
 
                     float heightDiff = newHeight - dHeight;
-                    
 
+
+                    Console.WriteLine("Height Diff: %f", heightDiff);
                     // droplet is moving uphill
                     if (heightDiff > 0)
                     {
@@ -76,6 +78,10 @@ namespace MiniProject
                         float erosionAmount = Math.Min((c - d.sediment) * Vars.pErosion, -heightDiff);
                         applyErosion(ref d, Vars.erosionRadius, ref updatedHeights, erosionAmount);
                     }
+
+                    // update droplet velocity and water amount
+                    d.velocity = (float)Math.Sqrt(d.velocity * d.velocity + heightDiff * Vars.pGravity);
+                    d.water = d.water * (1 - Vars.pEvaporation);
                 }
                 currentDroplets++;
             }
@@ -135,7 +141,21 @@ namespace MiniProject
             for (int i = 0; i < numPoint; ++i)
             {
                 weights[i] /= weighSum;
+                
+                float pointErosion = (float)(erosionAmount * weights[i]);
+                int pointIndex = (int)(coords[i].x * mapSize + coords[i].y);
+                if (map[pointIndex] < pointErosion)
+                {
+                    d.sediment += map[pointIndex];
+                    map[pointIndex] = 0;
+                } else
+                {
+                    d.sediment += pointErosion;
+                    map[pointIndex] -= pointErosion;
+                }
             }
+
+
         }
 
     }
