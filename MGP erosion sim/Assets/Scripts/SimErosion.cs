@@ -7,15 +7,18 @@ namespace MiniProject
 {
     public static class Vars
     {
-        public static float pInertia = 0.5f, pDeposition, pEvaporation = 0.01f, pMinSlope = 0.05f, pCapacity = 0.01f, pErosion = 0.1f, pGravity=10;
-        public static int pRadius = 2;
+        // World settings
+        public static float pInertia = 0.5f, pGravity = 10, pEvaporation = 0.01f;
+        // Erosion settings
+        public static float pCapacity = 8, pMinSlope = 0.05f, pDeposition = -1, pErosion = 0.1f;
+        public static int pErosionRadius = 2;
+        // Simulation duration settings
+        public static int dropletsPerUpdate = 1000, totalDroplets = 100000, nrIterations = 10;
+
         public static float initDropletWater = 1;
         public static float initDropletvelocity = 1;
         public static float[] heights;
         public static int imgRes;
-        public static int erosionRadius = 2;
-        public static int dropletsPerUpdate = 1000, totalDroplets = 100000;
-        public static int nrIterations = 30;
     }
 
     public class SimErosion
@@ -80,7 +83,7 @@ namespace MiniProject
                     {
                         // Erode all points inside the radius
                         float erosionAmount = Math.Min((c - d.sediment) * Vars.pErosion, -heightDiff);
-                        applyErosion(ref d, Vars.erosionRadius, ref updatedHeights, erosionAmount);
+                        applyErosion(ref d, Vars.pErosionRadius, ref updatedHeights, erosionAmount);
                     }
 
                     // update droplet velocity and water amount
