@@ -9,7 +9,7 @@ namespace MiniProject
     {
         public void setRadius(string radius)
         {
-            Vars.pRadius = float.Parse(radius);
+            Vars.pRadius = int.Parse(radius);
         }
     }
 }
