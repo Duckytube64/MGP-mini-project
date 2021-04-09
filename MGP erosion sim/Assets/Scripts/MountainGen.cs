@@ -72,15 +72,13 @@ namespace MiniProject
             procMesh.triangles = tris.ToArray();
             procMesh.RecalculateNormals(); //Determines which way the triangles are facing
             plane.GetComponent<MeshFilter>().mesh = procMesh; //Assign Mesh object to MeshFilter          
-
-            simErosion.Update();
-            updateMesh(simErosion.getUpdatedHeights());
         }
 
         // Update is called once per frame
         void Update()
         {
-
+            simErosion.Update();
+            updateMesh(simErosion.getUpdatedHeights());
         }
     }
 }
