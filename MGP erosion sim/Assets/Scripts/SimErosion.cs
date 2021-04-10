@@ -8,12 +8,12 @@ namespace MiniProject
     public static class Vars
     {
         // World settings
-        public static float pInertia = 0.05f, pGravity = 4, pEvaporation = 0.01f;
+        public static float pInertia = 0.1f, pGravity = 10, pEvaporation = 0.01f;
         // Erosion settings
-        public static float pCapacity = 0.5f, pMinSlope = 0.01f, pDeposition = 0.3f, pErosion = 0.01f;
-        public static int pErosionRadius = 2;
+        public static float pCapacity = 0.01f, pMinSlope = 0.01f, pDeposition = 0.01f, pErosion = 0.1f;
+        public static int pErosionRadius = 1;
         // Simulation duration settings
-        public static int dropletsPerUpdate = 1, totalDroplets = 20, nrIterations = 100;
+        public static int dropletsPerUpdate = 1000, totalDroplets = 100000, nrIterations = 10;
 
         public static float initDropletWater = 1;
         public static float initDropletvelocity = 1;
@@ -164,7 +164,9 @@ namespace MiniProject
                 {
                     d.sediment += map[pointIndex];
                     map[pointIndex] = 0;
-                } else {
+                } 
+                else 
+                {
                     d.sediment += pointErosion;
                     map[pointIndex] -= pointErosion;
                 }
