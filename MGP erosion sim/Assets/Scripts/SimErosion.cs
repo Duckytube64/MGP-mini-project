@@ -8,12 +8,12 @@ namespace MiniProject
     public static class Vars
     {
         // World settings
-        public static float pInertia = 0.5f, pGravity = 10, pEvaporation = 0.01f;
+        public static float pInertia = 0.05f, pGravity = 4, pEvaporation = 0.01f;
         // Erosion settings
-        public static float pCapacity = 8, pMinSlope = 0.05f, pDeposition = -1, pErosion = 0.1f;
+        public static float pCapacity = 0.5f, pMinSlope = 0.01f, pDeposition = 0.3f, pErosion = 0.01f;
         public static int pErosionRadius = 2;
         // Simulation duration settings
-        public static int dropletsPerUpdate = 1000, totalDroplets = 100000, nrIterations = 10;
+        public static int dropletsPerUpdate = 1, totalDroplets = 20, nrIterations = 100;
 
         public static float initDropletWater = 1;
         public static float initDropletvelocity = 1;
@@ -41,6 +41,7 @@ namespace MiniProject
                 Droplet d = new Droplet();
                 for (int j = 0; j < Vars.nrIterations; j++)
                 {
+                    int xGrid = (int)Math.Floor(d.x), yGrid = (int)Math.Floor(d.y);
                     // get droplet height by bilinear interpolation of the enclosing quad
                     float dHeight = 0;
                     Vector2 gradient = new Vector2(0, 0);
@@ -50,10 +51,13 @@ namespace MiniProject
                     d.dir.x = (d.dir.x * Vars.pInertia - gradient.x * (1 - Vars.pInertia));
                     d.dir.y = (d.dir.y * Vars.pInertia - gradient.y * (1 - Vars.pInertia));
                     d.dir.Normalize();
+                    Console.WriteLine(d.dir);
 
                     // update position
                     d.x += d.dir.x;
                     d.y += d.dir.y;
+
+                   
 
                     // stop simulating droplet if it doesn't move or if it gets out of bounds
                     if ((d.dir.x == 0 && d.dir.y == 0) || (d.x < 0 || d.x >= (Vars.imgRes - 1) || d.y < 0 || d.y >= (Vars.imgRes - 1)))
@@ -65,25 +69,25 @@ namespace MiniProject
                     computeGradientHeight(Vars.heights, ref d, ref newHeight, ref newGradient);
 
                     float heightDiff = newHeight - dHeight;
-                    float c = Math.Max(-heightDiff, Vars.pMinSlope) * d.velocity * d.water * Vars.pCapacity;
+                    float c = Math.Max(-heightDiff * d.velocity * d.water * Vars.pCapacity, Vars.pMinSlope);
 
                     // droplet is moving uphill or has more sediment than its capacity
                     if (d.sediment > c || heightDiff > 0)
                     {
-                        // Deposit sediment
-                        int xGrid = (int)Math.Floor(d.x), yGrid = (int)Math.Floor(d.y);
-                        
+                        // Deposit sediment                        
                         float depositAmount = heightDiff > 0 ? Math.Min(heightDiff, d.sediment) : (d.sediment - c) * Vars.pDeposition;
                         updatedHeights[xGrid * Vars.imgRes + yGrid] += depositAmount * (1 - d.u) * (1 - d.v);
                         updatedHeights[(xGrid + 1) * Vars.imgRes + yGrid] += depositAmount * (1 - d.u) * d.v;
                         updatedHeights[xGrid * Vars.imgRes + yGrid + 1] += depositAmount * d.u * (1 - d.v);
                         updatedHeights[(xGrid + 1) * Vars.imgRes + yGrid + 1] += depositAmount * d.u * d.v;
                         d.sediment -= depositAmount;
-                    } else
+                    }
+                    else
                     {
                         // Erode all points inside the radius
                         float erosionAmount = Math.Min((c - d.sediment) * Vars.pErosion, -heightDiff);
-                        applyErosion(ref d, Vars.pErosionRadius, ref updatedHeights, erosionAmount);
+                        d.sediment += erosionAmount;
+                        applyErosion(ref d, Vars.pErosionRadius, ref updatedHeights, erosionAmount, xGrid, yGrid);
                     }
 
                     // update droplet velocity and water amount
@@ -121,9 +125,8 @@ namespace MiniProject
                 (xy1 - xy) * (1 - d.u) + (x1y1 - x1y) * d.u);
         }
 
-        void applyErosion(ref Droplet d, int radius, ref float[] map, float erosionAmount)
+        void applyErosion(ref Droplet d, int radius, ref float[] map, float erosionAmount, int xGrid, int yGrid)
         {
-            int xGrid = (int)Math.Floor(d.x), yGrid = (int)Math.Floor(d.y);
             double[] weights = new double[(2 * radius + 1) * (2 * radius + 1)];
             Vector2[] coords = new Vector2[(2 * radius + 1) * (2 * radius + 1)];
             int numPoint = 0;
@@ -155,13 +158,13 @@ namespace MiniProject
                 weights[i] /= weighSum;
                 
                 float pointErosion = (float)(erosionAmount * weights[i]);
+
                 int pointIndex = (int)(coords[i].x * Vars.imgRes + coords[i].y);
                 if (map[pointIndex] < pointErosion)
                 {
                     d.sediment += map[pointIndex];
                     map[pointIndex] = 0;
-                } else
-                {
+                } else {
                     d.sediment += pointErosion;
                     map[pointIndex] -= pointErosion;
                 }
