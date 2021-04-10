@@ -42,6 +42,8 @@ namespace MiniProject
                 for (int j = 0; j < Vars.nrIterations; j++)
                 {
                     int xGrid = (int)Math.Floor(d.x), yGrid = (int)Math.Floor(d.y);
+                    float offsetX = d.x - xGrid;
+                    float offsetY = d.y - yGrid;
                     // get droplet height by bilinear interpolation of the enclosing quad
                     float dHeight = 0;
                     Vector2 gradient = new Vector2(0, 0);
@@ -76,17 +78,21 @@ namespace MiniProject
                     {
                         // Deposit sediment                        
                         float depositAmount = heightDiff > 0 ? Math.Min(heightDiff, d.sediment) : (d.sediment - c) * Vars.pDeposition;
-                        updatedHeights[xGrid * Vars.imgRes + yGrid] += depositAmount * (1 - d.u) * (1 - d.v);
-                        updatedHeights[(xGrid + 1) * Vars.imgRes + yGrid] += depositAmount * (1 - d.u) * d.v;
-                        updatedHeights[xGrid * Vars.imgRes + yGrid + 1] += depositAmount * d.u * (1 - d.v);
-                        updatedHeights[(xGrid + 1) * Vars.imgRes + yGrid + 1] += depositAmount * d.u * d.v;
+                        if (depositAmount > 1)
+                        {
+                            depositAmount = depositAmount;
+                        }
+                        updatedHeights[xGrid * Vars.imgRes + yGrid] += depositAmount * (1 - offsetX) * (1 - offsetY);
+                        updatedHeights[(xGrid + 1) * Vars.imgRes + yGrid] += depositAmount * (1 - offsetX) * offsetY;
+                        updatedHeights[xGrid * Vars.imgRes + yGrid + 1] += depositAmount * offsetX * (1 - offsetY);
+                        updatedHeights[(xGrid + 1) * Vars.imgRes + yGrid + 1] += depositAmount * offsetX * offsetY;
                         d.sediment -= depositAmount;
                     }
                     else
                     {
                         // Erode all points inside the radius
                         float erosionAmount = Math.Min((c - d.sediment) * Vars.pErosion, -heightDiff);
-                        d.sediment += erosionAmount;
+                        // d.sediment += erosionAmount;
                         applyErosion(ref d, Vars.pErosionRadius, ref updatedHeights, erosionAmount, xGrid, yGrid);
                     }
 
