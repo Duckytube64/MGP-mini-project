@@ -47,8 +47,8 @@ namespace MiniProject
                 for (int j = 0; j < imgRes; j++)
                 {
                     //Add each new vertex in the plane
-                    float height = newHeights[i * imgRes + j];
-                    verts.Add(new Vector3(i * 4, height * 300, j * 4));
+                    float height = newHeights[i * imgRes + j] * 80;
+                    verts.Add(new Vector3(i, height, j));
                     //Skip if a new square on the plane hasn't been formed
                     if (i == 0 || j == 0) continue;
                     //Adds the index of the three vertices in order to make up each of the two tris
@@ -80,12 +80,7 @@ namespace MiniProject
             if (!Vars.pause)
             {
                 simErosion.Update();
-                float[] temp = simErosion.getUpdatedHeights();
-                for (int i = 0; i < temp.Length; i++)
-                {
-                    heights[i] += temp[i];
-                }                
-                updateMesh(heights);
+                updateMesh(simErosion.getUpdatedHeights());
             }
         }
     }

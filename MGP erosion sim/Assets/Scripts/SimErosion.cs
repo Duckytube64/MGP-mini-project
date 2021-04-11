@@ -8,12 +8,12 @@ namespace MiniProject
     public static class Vars
     {
         // World settings
-        public static float pInertia = 0.3f, pGravity = 10, pEvaporation = 0.01f;
+        public static float pInertia = 0.0125f, pGravity = 4, pEvaporation = 0.01f;
         // Erosion settings
-        public static float pCapacity = 0.1f, pMinSlope = 0.01f, pDeposition = 0.01f, pErosion = 0.1f;
-        public static int pErosionRadius = 3;
+        public static float pCapacity = 0.4f, pMinSlope = 0.001f, pDeposition = 0.1f, pErosion = 0.1f;
+        public static int pErosionRadius = 2;
         // Simulation duration settings
-        public static int dropletsPerUpdate = 1000, totalDroplets = 100000, nrIterations = 100, currentDroplets = 0;
+        public static int dropletsPerUpdate = 1000, totalDroplets = 100000, nrIterations = 20, currentDroplets = 0;
 
         public static float initDropletWater = 1;
         public static float initDropletvelocity = 1;
@@ -32,7 +32,7 @@ namespace MiniProject
         {
             Vars.heights = Heights;
             Vars.imgRes = ImgRes;
-            updatedHeights = new float[Heights.Length];
+            updatedHeights = (float [])Heights.Clone();
         }
 
         // Update is called once per frame
@@ -49,7 +49,7 @@ namespace MiniProject
                     // get droplet height by bilinear interpolation of the enclosing quad
                     float dHeight = 0;
                     Vector2 gradient = new Vector2(0, 0);
-                    computeGradientHeight(Vars.heights, ref d, ref dHeight, ref gradient);
+                    computeGradientHeight(updatedHeights, ref d, ref dHeight, ref gradient);
 
                     // get new direction and normalize
                     d.dir.x = (d.dir.x * Vars.pInertia - gradient.x * (1 - Vars.pInertia));
@@ -69,7 +69,7 @@ namespace MiniProject
                     // compute new droplet height
                     float newHeight = 0;
                     Vector2 newGradient = new Vector2(0, 0);
-                    computeGradientHeight(Vars.heights, ref d, ref newHeight, ref newGradient);
+                    computeGradientHeight(updatedHeights, ref d, ref newHeight, ref newGradient);
 
                     float heightDiff = newHeight - dHeight;
                     float c = Math.Max(Math.Max(-heightDiff, Vars.pMinSlope) * d.velocity * d.water * Vars.pCapacity, 0.01f);
@@ -80,18 +80,6 @@ namespace MiniProject
                     {
                         // Deposit sediment                        
                         float depositAmount = heightDiff > 0 ? Math.Min(heightDiff, d.sediment) : (d.sediment - c) * Vars.pDeposition;
-                        if (depositAmount > 0.0001)
-                            if (depositAmount > 0.001) // alleen als heightdiff > 0?
-                            {
-                                if (heightDiff > 0)
-                                {
-                                    depositAmount = depositAmount;
-                                }
-                                else if (d.sediment > c)
-                                {
-                                    depositAmount = depositAmount;
-                                }
-                            }
                         updatedHeights[xGrid * Vars.imgRes + yGrid] += depositAmount * (1 - offsetX) * (1 - offsetY);
                         updatedHeights[(xGrid + 1) * Vars.imgRes + yGrid] += depositAmount * offsetX * (1 - offsetY);
                         updatedHeights[xGrid * Vars.imgRes + yGrid + 1] += depositAmount * (1 - offsetX) * offsetY;
@@ -106,7 +94,7 @@ namespace MiniProject
                     }
 
                     // update droplet velocity and water amount
-                    d.velocity = (float)Math.Sqrt(Math.Max(d.velocity * d.velocity + heightDiff * Vars.pGravity, 0));
+                    d.velocity = (float)Math.Sqrt(Math.Max(d.velocity * d.velocity - heightDiff * Vars.pGravity, 0));
                     d.water = d.water * (1 - Vars.pEvaporation);
                 }
                 Vars.currentDroplets++;
@@ -155,14 +143,14 @@ namespace MiniProject
                     int coordY = yGrid + y;
 
                     float diffX = coordX - d.x, diffY = coordY - d.y;
-                    float distanceSqrd = diffX * diffX + diffY * diffY;
+                    float distanceSqrd = x * x + y * y;
                     // ignore points outside the circle
                     if (distanceSqrd > radius * radius)
                         continue;
 
                     if (coordX >= 0 && coordX < Vars.imgRes && coordY >= 0 && coordY < Vars.imgRes)
                     {
-                        double weight = radius - Math.Sqrt(distanceSqrd);
+                        double weight = Math.Max(0, radius - Math.Sqrt(distanceSqrd));
                         weights[numPoint] = weight;
                         coords[numPoint] = new Vector2(coordX, coordY);
                         numPoint++;
@@ -178,10 +166,16 @@ namespace MiniProject
                 weights[i] /= weighSum;
                 
                 float pointErosion = (float)(erosionAmount * weights[i]);
-
                 int pointIndex = (int)(coords[i].x * Vars.imgRes + coords[i].y);
-                d.sediment += pointErosion;
-                map[pointIndex] -= pointErosion;
+                if (pointErosion > map[pointIndex])
+                {
+                    d.sediment += map[pointIndex];
+                    map[pointIndex] = 0;
+                } else
+                {
+                    d.sediment += pointErosion;
+                    map[pointIndex] -= pointErosion;
+                }
             }
         }
     }
