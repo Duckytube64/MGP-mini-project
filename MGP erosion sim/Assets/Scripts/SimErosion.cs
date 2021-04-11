@@ -31,7 +31,7 @@ namespace MiniProject
         {
             Vars.heights = Heights;
             Vars.imgRes = ImgRes;
-            updatedHeights = (float[])Heights.Clone();
+            updatedHeights = new float[Heights.Length];
         }
 
         // Update is called once per frame
@@ -79,9 +79,18 @@ namespace MiniProject
                     {
                         // Deposit sediment                        
                         float depositAmount = heightDiff > 0 ? Math.Min(heightDiff, d.sediment) : (d.sediment - c) * Vars.pDeposition;
-                        if (depositAmount > 0.001)
-                            if (depositAmount > 0.01)
-                                depositAmount = depositAmount;
+                        if (depositAmount > 0.0001)
+                            if (depositAmount > 0.001) // alleen als heightdiff > 0?
+                            {
+                                if (heightDiff > 0)
+                                {
+                                    depositAmount = depositAmount;
+                                }
+                                else if (d.sediment > c)
+                                {
+                                    depositAmount = depositAmount;
+                                }
+                            }
                         updatedHeights[xGrid * Vars.imgRes + yGrid] += depositAmount * (1 - offsetX) * (1 - offsetY);
                         updatedHeights[(xGrid + 1) * Vars.imgRes + yGrid] += depositAmount * offsetX * (1 - offsetY);
                         updatedHeights[xGrid * Vars.imgRes + yGrid + 1] += depositAmount * (1 - offsetX) * offsetY;
