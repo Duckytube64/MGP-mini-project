@@ -19,6 +19,7 @@ namespace MiniProject
         public static float initDropletvelocity = 1;
         public static float[] heights;
         public static int imgRes;
+        public static System.Random randomGen = new System.Random();
     }
 
     public class SimErosion
@@ -53,7 +54,6 @@ namespace MiniProject
                     d.dir.x = (d.dir.x * Vars.pInertia - gradient.x * (1 - Vars.pInertia));
                     d.dir.y = (d.dir.y * Vars.pInertia - gradient.y * (1 - Vars.pInertia));
                     d.dir.Normalize();
-                    Console.WriteLine(d.dir);
 
                     // update position
                     d.x += d.dir.x;
@@ -71,7 +71,7 @@ namespace MiniProject
                     computeGradientHeight(Vars.heights, ref d, ref newHeight, ref newGradient);
 
                     float heightDiff = newHeight - dHeight;
-                    float c = Math.Max(-heightDiff * d.velocity * d.water * Vars.pCapacity, Vars.pMinSlope);
+                    float c = Math.Max(Math.Max(-heightDiff, Vars.pMinSlope) * d.velocity * d.water * Vars.pCapacity, 0.01f);
 
                     // droplet is moving uphill or has more sediment than its capacity
                     if (d.sediment > c || heightDiff > 0)
@@ -83,8 +83,8 @@ namespace MiniProject
                             depositAmount = depositAmount;
                         }
                         updatedHeights[xGrid * Vars.imgRes + yGrid] += depositAmount * (1 - offsetX) * (1 - offsetY);
-                        updatedHeights[(xGrid + 1) * Vars.imgRes + yGrid] += depositAmount * (1 - offsetX) * offsetY;
-                        updatedHeights[xGrid * Vars.imgRes + yGrid + 1] += depositAmount * offsetX * (1 - offsetY);
+                        updatedHeights[(xGrid + 1) * Vars.imgRes + yGrid] += depositAmount * offsetX * (1 - offsetY);
+                        updatedHeights[xGrid * Vars.imgRes + yGrid + 1] += depositAmount * (1 - offsetX) * offsetY;
                         updatedHeights[(xGrid + 1) * Vars.imgRes + yGrid + 1] += depositAmount * offsetX * offsetY;
                         d.sediment -= depositAmount;
                     }
@@ -92,7 +92,6 @@ namespace MiniProject
                     {
                         // Erode all points inside the radius
                         float erosionAmount = Math.Min((c - d.sediment) * Vars.pErosion, -heightDiff);
-                        // d.sediment += erosionAmount;
                         applyErosion(ref d, Vars.pErosionRadius, ref updatedHeights, erosionAmount, xGrid, yGrid);
                     }
 
@@ -189,9 +188,9 @@ namespace MiniProject
         
         public Droplet()
         {
-            System.Random r = new System.Random();
-            x = (float)r.NextDouble() * (Vars.imgRes - 1);
-            y = (float)r.NextDouble() * (Vars.imgRes - 1);
+            //System.Random r = new System.Random();
+            x = (float)Vars.randomGen.NextDouble() * (Vars.imgRes - 1);
+            y = (float)Vars.randomGen.NextDouble() * (Vars.imgRes - 1);
         }
     }
 }

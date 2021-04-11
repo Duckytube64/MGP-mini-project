@@ -23,7 +23,7 @@ namespace MiniProject
                 for (int j = 0; j < imgRes; j++)
                 {
                     //Copy heightmap to heigh array
-                    float height = hMap.GetPixel(i, j).grayscale * 40;
+                    float height = hMap.GetPixel(i, j).grayscale;
                     heights[i * imgRes + j] = height;
                 }
 
@@ -48,7 +48,7 @@ namespace MiniProject
                 {
                     //Add each new vertex in the plane
                     float height = newHeights[i * imgRes + j];
-                    verts.Add(new Vector3(i, height, j));
+                    verts.Add(new Vector3(i, height * 80, j));
                     //Skip if a new square on the plane hasn't been formed
                     if (i == 0 || j == 0) continue;
                     //Adds the index of the three vertices in order to make up each of the two tris
