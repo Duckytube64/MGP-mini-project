@@ -13,13 +13,12 @@ namespace MiniProject
         public static float pCapacity = 0.1f, pMinSlope = 0.01f, pDeposition = 0.01f, pErosion = 0.1f;
         public static int pErosionRadius = 3;
         // Simulation duration settings
-        public static int dropletsPerUpdate = 1000, totalDroplets = 100000, nrIterations = 100, currentDroplets = 0;
+        public static int dropletsPerUpdate = 100, totalDroplets = 70000, nrIterations = 100, currentDroplets = 0;
 
         public static float initDropletWater = 1;
         public static float initDropletvelocity = 1;
         public static float[] heights;
         public static int imgRes;
-        public static System.Random randomGen = new System.Random();
 
         public static bool pause = true;
     }
@@ -32,7 +31,7 @@ namespace MiniProject
         {
             Vars.heights = Heights;
             Vars.imgRes = ImgRes;
-            updatedHeights = new float[Heights.Length];
+            updatedHeights = (float[])Heights.Clone();
         }
 
         // Update is called once per frame
@@ -55,15 +54,14 @@ namespace MiniProject
                     d.dir.x = (d.dir.x * Vars.pInertia - gradient.x * (1 - Vars.pInertia));
                     d.dir.y = (d.dir.y * Vars.pInertia - gradient.y * (1 - Vars.pInertia));
                     d.dir.Normalize();
+                    Console.WriteLine(d.dir);
 
                     // update position
                     d.x += d.dir.x;
-                    d.y += d.dir.y;
-
-                   
+                    d.y += d.dir.y;                   
 
                     // stop simulating droplet if it doesn't move or if it gets out of bounds
-                    if ((d.dir.x == 0 && d.dir.y == 0) || (d.x < 0 || d.x >= (Vars.imgRes - 1) || d.y < 0 || d.y >= (Vars.imgRes - 1)))
+                    if ((d.dir.x == 0 && d.dir.y == 0) || d.x < 0 || d.x >= (Vars.imgRes - 1) || d.y < 0 || d.y >= (Vars.imgRes - 1))
                         break;
 
                     // compute new droplet height
@@ -72,8 +70,7 @@ namespace MiniProject
                     computeGradientHeight(Vars.heights, ref d, ref newHeight, ref newGradient);
 
                     float heightDiff = newHeight - dHeight;
-                    float c = Math.Max(Math.Max(-heightDiff, Vars.pMinSlope) * d.velocity * d.water * Vars.pCapacity, 0.01f);
-
+                    float c = Math.Max(-heightDiff, Vars.pMinSlope) * d.velocity * d.water * Vars.pCapacity;
 
                     // droplet is moving uphill or has more sediment than its capacity
                     if (d.sediment > c || heightDiff > 0)
@@ -102,6 +99,9 @@ namespace MiniProject
                     {
                         // Erode all points inside the radius
                         float erosionAmount = Math.Min((c - d.sediment) * Vars.pErosion, -heightDiff);
+                        if (erosionAmount > 0.01)
+                            erosionAmount = erosionAmount;
+                        // d.sediment += erosionAmount;
                         applyErosion(ref d, ref updatedHeights, erosionAmount, xGrid, yGrid);
                     }
 
@@ -194,9 +194,9 @@ namespace MiniProject
         
         public Droplet()
         {
-            //System.Random r = new System.Random();
-            x = (float)Vars.randomGen.NextDouble() * (Vars.imgRes - 1);
-            y = (float)Vars.randomGen.NextDouble() * (Vars.imgRes - 1);
+            System.Random r = new System.Random();
+            x = (float)r.NextDouble() * (Vars.imgRes - 1);
+            y = (float)r.NextDouble() * (Vars.imgRes - 1);
         }
     }
 }

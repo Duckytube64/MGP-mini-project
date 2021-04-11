@@ -80,12 +80,7 @@ namespace MiniProject
             if (!Vars.pause)
             {
                 simErosion.Update();
-                float[] temp = simErosion.getUpdatedHeights();
-                for (int i = 0; i < temp.Length; i++)
-                {
-                    heights[i] += temp[i];
-                }                
-                updateMesh(heights);
+                updateMesh(simErosion.getUpdatedHeights());
             }
         }
     }
