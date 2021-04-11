@@ -23,8 +23,8 @@ namespace MiniProject
                 for (int j = 0; j < imgRes; j++)
                 {
                     //Copy heightmap to heigh array
-                    float height = hMap.GetPixel(i, j).grayscale * 40;
-                    heights[i * imgRes + j] = height;
+                    float height = hMap.GetPixel(i, j).grayscale;
+                    heights[i * imgRes + j] = height / 255;
                 }
 
             //Create our terrain GO and add relevant components
@@ -47,7 +47,7 @@ namespace MiniProject
                 for (int j = 0; j < imgRes; j++)
                 {
                     //Add each new vertex in the plane
-                    float height = newHeights[i * imgRes + j];
+                    float height = newHeights[i * imgRes + j] * 20000;
                     verts.Add(new Vector3(i * 4, height * 4, j * 4));
                     //Skip if a new square on the plane hasn't been formed
                     if (i == 0 || j == 0) continue;
@@ -74,14 +74,14 @@ namespace MiniProject
             plane.GetComponent<MeshFilter>().mesh = procMesh; //Assign Mesh object to MeshFilter          
         }
 
-        public int curr;
-
         // Update is called once per frame
         void Update()
         {
-            simErosion.Update();
-            updateMesh(simErosion.getUpdatedHeights());
-            curr = simErosion.currentDroplets;
+            if (!Vars.pause)
+            {
+                simErosion.Update();
+                updateMesh(simErosion.getUpdatedHeights());
+            }
         }
     }
 }

@@ -38,6 +38,19 @@ namespace MiniProject
             }
         }
 
+        public void Update()
+        {
+            if (Input.GetKeyUp(KeyCode.Space))
+            {
+                setPause();
+            }
+        }
+
+        public void setPause()
+        {
+            Vars.pause = !Vars.pause;
+        }
+
         // World settings
         public void setInertia(string inertia)
         {
