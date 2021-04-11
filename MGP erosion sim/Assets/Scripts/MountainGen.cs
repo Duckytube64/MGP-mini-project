@@ -74,14 +74,14 @@ namespace MiniProject
             plane.GetComponent<MeshFilter>().mesh = procMesh; //Assign Mesh object to MeshFilter          
         }
 
-        public int curr;
-
         // Update is called once per frame
         void Update()
         {
-            simErosion.Update();
-            updateMesh(simErosion.getUpdatedHeights());
-            curr = simErosion.currentDroplets;
+            if (!Vars.pause)
+            {
+                simErosion.Update();
+                updateMesh(simErosion.getUpdatedHeights());
+            }
         }
     }
 }
