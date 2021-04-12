@@ -95,18 +95,26 @@ namespace MiniProject
                 Vars.currentDroplets = 0;
                 updatedDroplets = 0;
             }
+            float[] map;
+
             if (!Vars.pause)
             {
+                if (Vars.view)
+                {
+                    map = simErosion.getUpdatedHeights();
+                } else {
+                    map = heights;
+                }
                 if (updatedDroplets + 100 > Vars.dropletsPerUpdate)
                 {
                     simErosion.Update(updatedDroplets - Vars.dropletsPerUpdate, true);
-                    updateMesh(simErosion.getUpdatedHeights());
+                    updateMesh(map);
                     updatedDroplets = 0;
                 }
                 else if (Vars.currentDroplets + 100 > Vars.totalDroplets)
                 {
-                    simErosion.Update(Vars.totalDroplets - Vars.currentDroplets, true);
-                    updateMesh(simErosion.getUpdatedHeights());
+                    simErosion.Update(Vars.currentDroplets - Vars.totalDroplets, true);
+                    updateMesh(map);
                     updatedDroplets = 0;
                 }
                 else
