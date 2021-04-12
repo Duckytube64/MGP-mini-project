@@ -21,6 +21,7 @@ namespace MiniProject
         public static int imgRes;
 
         public static bool pause = true;
+        public static bool reset = false;
     }
 
     public class SimErosion

@@ -51,6 +51,11 @@ namespace MiniProject
             Vars.pause = !Vars.pause;
         }
 
+        public void resetScene()
+        {
+            Vars.reset = true;
+        }
+
         // World settings
         public void setInertia(string inertia)
         {
