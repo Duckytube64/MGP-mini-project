@@ -4,43 +4,32 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    // Start is called before the first frame update
-    private int distance = 100;
+    private Vector3 mouseDelta = Vector3.zero;
+    private Vector3 lastMousePosition = Vector3.zero;
+    float speed = 10.0f;
+    Transform cam, mesh;
 
     void Start()
     {
-        //transform.LookAt(target);
+        cam = transform.Find("Main Camera");
+        mesh = transform.Find("ProcPlane");
     }
 
-    // Update is called once per frame
     void Update()
     {
-        float speed = 100.0f;
-        // transform.Rotate(Vector3.down, 10.0f * Time.deltaTime);
+        mouseDelta = lastMousePosition - Input.mousePosition;
+        lastMousePosition = Input.mousePosition;
 
         if (Input.GetMouseButton(0))
         {
-            if (Input.GetAxis("Mouse X") > 0)
-            {
-                transform.Rotate(Vector3.down, speed * Time.deltaTime);
-            }
-
-            else if (Input.GetAxis("Mouse X") < 0)
-            {
-                transform.Rotate(Vector3.down, - speed * Time.deltaTime);
-            }
+            transform.Rotate(Vector3.down, mouseDelta.x * speed * Time.deltaTime);
+            transform.Rotate(Vector3.left, -mouseDelta.y * speed * Time.deltaTime);
         }
-        if (Input.GetMouseButton(1))
+        float scrollAmount = Input.GetAxis("Mouse ScrollWheel");
+        if (scrollAmount != 0)
         {
-            if (Input.GetAxis("Mouse Y") > 0)
-            {
-                transform.Rotate(Vector3.left, speed * Time.deltaTime);
-            }
-
-            else if (Input.GetAxis("Mouse Y") < 0)
-            {
-                transform.Rotate(Vector3.left, -speed * Time.deltaTime);
-            }
+            cam.position += cam.forward * scrollAmount * 5 * speed;
         }
+        cam.transform.LookAt(mesh);
     }
 }
