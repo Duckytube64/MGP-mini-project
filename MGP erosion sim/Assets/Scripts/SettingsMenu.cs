@@ -72,6 +72,11 @@ namespace MiniProject
             Vars.reset = true;
         }
 
+        public void toggleView()
+        {
+            Vars.view = !Vars.view;
+        }
+
         // World settings
         public void setInertia(string inertia)
         {

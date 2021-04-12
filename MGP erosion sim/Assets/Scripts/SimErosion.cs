@@ -22,6 +22,7 @@ namespace MiniProject
 
         public static bool pause = true;
         public static bool reset = false;
+        public static bool view = true;
         public static Texture2D heightMap;
     }
 
