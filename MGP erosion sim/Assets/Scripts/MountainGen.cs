@@ -40,7 +40,6 @@ namespace MiniProject
 
         void updateMesh(float[] newHeights)
         {
-            int scale = 4;
             List<Vector3> verts = new List<Vector3>();
             List<int> tris = new List<int>();
 
@@ -49,7 +48,7 @@ namespace MiniProject
                 {
                     //Add each new vertex in the plane
                     float height = newHeights[i * imgRes + j] * 80;
-                    verts.Add(new Vector3(i - imgRes / 2, height, j - imgRes / 2) * scale);
+                    verts.Add(new Vector3(i - imgRes / 2, height, j - imgRes / 2));
                     //Skip if a new square on the plane hasn't been formed
                     if (i == 0 || j == 0) continue;
                     //Adds the index of the three vertices in order to make up each of the two tris
