@@ -24,6 +24,8 @@ namespace MiniProject
         public static bool reset = false;
         public static bool view = true;
         public static Texture2D heightMap;
+
+        public static int fileIndex = 0;
     }
 
     public class SimErosion
@@ -116,7 +118,7 @@ namespace MiniProject
             return updatedHeights;
         }
 
-        float[] blurMap(float[] map, int mapSize, bool[] applyBlur, float blurFactor = 0.005f)
+        float[] blurMap(float[] map, int mapSize, bool[] applyBlur, float blurFactor = 0.1f)
         {
             float[] blurredMap = (float[])map.Clone();
             int[,] kernel = new int[,] { { 1, 2, 1 }, { 2, 4, 2 }, { 1, 2, 1 } };

@@ -7,7 +7,7 @@ namespace MiniProject
     public class MountainGen : MonoBehaviour
     {
         public Material mountain_Material;
-        public Texture2D hMap;
+        Texture2D hMap;
         int imgRes;
         float[] heights;
         SimErosion simErosion;
@@ -15,6 +15,8 @@ namespace MiniProject
         // Start is called before the first frame update
         void Start()
         {
+            string a = "Heightmaps/HM_" + Vars.fileIndex;
+            hMap = (Texture2D)Resources.Load(a);
             imgRes = hMap.width;
             heights = new float[imgRes * imgRes];
 

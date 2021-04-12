@@ -9,11 +9,11 @@ namespace MiniProject
 {
     public class SettingsMenu : MonoBehaviour
     {
-        string[] pars = new string[11] {"Inertia", "Gravity", "Evaporation", "Carry capacity", "Minimal slope",
-            "Deposition speed", "Erosion", "Erosion radius", "Update rate", "Total droplets", "Droplet lifetime"};
+        string[] pars = new string[12] {"Inertia", "Gravity", "Evaporation", "Carry capacity", "Minimal slope",
+            "Deposition speed", "Erosion", "Erosion radius", "Update rate", "Total droplets", "Droplet lifetime","File number"};
 
         InputField[] inputfields = new InputField[11];
-        float[] vals = new float[11];
+        float[] vals = new float[12];
 
         private void Start()
         {
@@ -29,6 +29,7 @@ namespace MiniProject
             vals[8] = Vars.dropletsPerUpdate;
             vals[9] = Vars.totalDroplets;
             vals[10] = Vars.nrIterations;
+            vals[11] = Vars.fileIndex;
 
             Transform parameters = transform.Find("Parameters");
             for (int i = 0; i < pars.Length; i++)
@@ -38,6 +39,9 @@ namespace MiniProject
                 inputfields[i] = inputfield;
                 inputfield.text = vals[i].ToString();
             }
+            InputField fileNrInput = transform.Find("File Number").GetComponent<InputField>();
+            inputfields[11] = fileNrInput;
+            fileNrInput.text = vals[11].ToString();
         }
 
         public void Update()
@@ -60,16 +64,28 @@ namespace MiniProject
 
         public void loadTerrain()
         {
+            string a = "Heightmaps/HM_" + inputfields[11];
             Texture2D texture = new Texture2D(2, 2);
-            string path = EditorUtility.OpenFilePanel("Overwrite with png", "", "png");
-            if (path.Length != 0)
+            texture = (Texture2D)Resources.Load(a);
+            if (texture != null)
             {
-                var fileContent = File.ReadAllBytes(path);
-                Debug.Log(fileContent.Length);
-                texture.LoadImage(fileContent);
+                Vars.heightMap = texture;
+                Vars.reset = true;
             }
-            Vars.heightMap = texture;
-            Vars.reset = true;
+        }
+
+        public void setFileNumber(string fileNumber)
+        {
+            if (fileNumber != "")
+            {
+                int temp = Mathf.Clamp(int.Parse(fileNumber), 0, 1);
+                Vars.pInertia = temp;
+                inputfields[11].text = temp.ToString();
+            }
+            else
+            {
+                inputfields[11].text = Vars.pInertia.ToString();
+            }
         }
 
         public void toggleView()
