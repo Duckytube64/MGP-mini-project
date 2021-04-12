@@ -13,7 +13,7 @@ namespace MiniProject
         public static float pCapacity = 0.4f, pMinSlope = 0.001f, pDeposition = 0.1f, pErosion = 0.1f;
         public static int pErosionRadius = 2;
         // Simulation duration settings
-        public static int dropletsPerUpdate = 1000, totalDroplets = 100000, nrIterations = 20, currentDroplets = 0;
+        public static int dropletsPerUpdate = 100, totalDroplets = 100000, nrIterations = 40, currentDroplets = 0;
 
         public static float initDropletWater = 1;
         public static float initDropletvelocity = 1;
@@ -42,6 +42,7 @@ namespace MiniProject
                 Droplet d = new Droplet();
                 for (int j = 0; j < Vars.nrIterations; j++)
                 {
+                    Vector2 oldPos = new Vector2(d.x, d.y);
                     int xGrid = (int)Math.Floor(d.x), yGrid = (int)Math.Floor(d.y);
                     float offsetX = d.x - xGrid;
                     float offsetY = d.y - yGrid;
@@ -73,24 +74,23 @@ namespace MiniProject
                     float c = Math.Max(-heightDiff, Vars.pMinSlope) * d.velocity * d.water * Vars.pCapacity;
 
                     // droplet is moving uphill or has more sediment than its capacity
-                    if (d.sediment > c || heightDiff > 0)
+                    if (d.sediment > c)
                     {
                         // Deposit sediment                        
-                        float depositAmount = heightDiff > 0 ? Math.Min(heightDiff, d.sediment) : (d.sediment - c) * Vars.pDeposition;
-                        updatedHeights[xGrid * Vars.imgRes + yGrid] += depositAmount * (1 - offsetX) * (1 - offsetY);
-                        updatedHeights[(xGrid + 1) * Vars.imgRes + yGrid] += depositAmount * offsetX * (1 - offsetY);
-                        updatedHeights[xGrid * Vars.imgRes + yGrid + 1] += depositAmount * (1 - offsetX) * offsetY;
-                        updatedHeights[(xGrid + 1) * Vars.imgRes + yGrid + 1] += depositAmount * offsetX * offsetY;
-                        d.sediment -= depositAmount;
+                        float depositAmount = (d.sediment - c) * Vars.pDeposition;
+                        applyDeposition(ref d, ref updatedHeights, depositAmount, newHeight);
+                    }
+                    else if (heightDiff > 0)
+                    {
+                        float depositAmount = Math.Min(heightDiff, d.sediment);
+                        applyDeposition(ref d, ref updatedHeights, depositAmount, dHeight, true, oldPos.x, oldPos.y);
                     }
                     else
                     {
                         // Erode all points inside the radius
                         float erosionAmount = Math.Min((c - d.sediment) * Vars.pErosion, -heightDiff);
-                        if (erosionAmount > 0.01)
-                            erosionAmount = erosionAmount;
                         // d.sediment += erosionAmount;
-                        applyErosion(ref d, ref updatedHeights, erosionAmount, xGrid, yGrid);
+                        applyErosion(ref d, ref updatedHeights, erosionAmount);
                     }
 
                     // update droplet velocity and water amount
@@ -128,19 +128,19 @@ namespace MiniProject
                 (xy1 - xy) * (1 - d.u) + (x1y1 - x1y) * d.u);
         }
 
-        void applyErosion(ref Droplet d, ref float[] map, float erosionAmount, int xGrid, int yGrid)
+        void applyErosion(ref Droplet d, ref float[] map, float erosionAmount)
         {
             int radius = Vars.pErosionRadius;
             double[] weights = new double[(int)Math.Pow(2 * radius + 1, 2)];
             Vector2[] coords = new Vector2[(int)Math.Pow(2 * radius + 1, 2)];
             int numPoint = 0;
+
             double weighSum = 0;
             for (int x = -radius; x <= radius + 1; ++x)
-            {
                 for (int y = -radius; y <= radius + 1; ++y)
                 {
-                    int coordX = xGrid + x;
-                    int coordY = yGrid + y;
+                    int coordX = (int)d.x + x;
+                    int coordY = (int)d.y + y;
 
                     float diffX = coordX - d.x, diffY = coordY - d.y;
                     float distanceSqrd = x * x + y * y;
@@ -157,14 +157,10 @@ namespace MiniProject
                         weighSum += weight;
                     }
                 }
-            }
-
-            float initsed = d.sediment;
 
             for (int i = 0; i < numPoint; ++i)
             {
                 weights[i] /= weighSum;
-                
                 float pointErosion = (float)(erosionAmount * weights[i]);
                 int pointIndex = (int)(coords[i].x * Vars.imgRes + coords[i].y);
                 if (pointErosion > map[pointIndex])
@@ -178,6 +174,96 @@ namespace MiniProject
                 }
             }
         }
+
+        void applyDeposition(ref Droplet d, ref float[] map, float depositAmount, float currHeight, bool tooHigh = false, float oldX = 0, float oldY = 0)
+        {
+            float X = d.x, Y = d.y;
+            float heighFactor = 3;
+            // We want to deposit before the hill, not on the hill
+            if (tooHigh)
+            {
+                X = oldX;
+                Y = oldY;
+            }
+            
+            int radius = Vars.pErosionRadius;
+            List<double> distanceWeights = new List<double>();
+            List<double> heightWeights = new List<double>();
+            List<Vector2> coords = new List<Vector2>();
+            int numPoint = 0;
+
+            double dWeightSum = 0, hWeightSum = 0;
+            for (int x = -radius; x <= radius + 1; ++x)
+                for (int y = -radius; y <= radius + 1; ++y)
+                {
+                    int coordX = (int)X + x;
+                    int coordY = (int)Y + y;
+
+                    float diffX = coordX - X, diffY = coordY - Y;
+                    float distanceSqrd = diffX * diffX + diffY * diffY;
+                    // ignore points outside the circle
+                    if (distanceSqrd > radius * radius)
+                        continue;
+
+
+                    if (coordX >= 0 && coordX < Vars.imgRes && coordY >= 0 && coordY < Vars.imgRes)
+                    {
+                        float hDiff = map[coordX * Vars.imgRes + coordY] - currHeight;
+
+                        double distanceWeight = Math.Max(0, radius - Math.Sqrt(distanceSqrd));
+                        distanceWeights.Add(distanceWeight);
+                        // higher points recieve exponentially less deposition
+                        double heightWeight = Math.Pow(1 - hDiff, 2);
+                        heightWeights.Add(heightWeight);
+
+                        coords.Add(new Vector2(coordX, coordY));
+                        numPoint++;
+                        dWeightSum += distanceWeight;
+                        hWeightSum += heightWeight;
+                    }
+                }
+
+            for (int i = 0; i < numPoint; ++i)
+            {
+                distanceWeights[i] /= dWeightSum;
+                heightWeights[i] /= hWeightSum;
+                double weight = (distanceWeights[i] + heightWeights[i]) / 2;
+                float pointDeposition = (float)(depositAmount * weight);
+                int pointIndex = (int)(coords[i].x * Vars.imgRes + coords[i].y);
+                d.sediment -= pointDeposition;
+                if (float.IsNaN(pointDeposition))
+                    pointDeposition = pointDeposition;
+                map[pointIndex] += pointDeposition;
+            }
+        }
+
+        //void getWeights(int radius, float dX, float dY, ref double[] weights, ref Vector2[] coords, ref int numPoint)
+        //{
+        //    double weighSum = 0;
+        //    for (int x = -radius; x <= radius + 1; ++x)            
+        //        for (int y = -radius; y <= radius + 1; ++y)
+        //        {
+        //            int coordX = (int)dX + x;
+        //            int coordY = (int)dY + y;
+
+        //            float diffX = coordX - dX, diffY = coordY - dY;
+        //            float distanceSqrd = x * x + y * y;
+        //            // ignore points outside the circle
+        //            if (distanceSqrd > radius * radius)
+        //                continue;
+
+        //            if (coordX >= 0 && coordX < Vars.imgRes && coordY >= 0 && coordY < Vars.imgRes)
+        //            {
+        //                double weight = Math.Max(0, radius - Math.Sqrt(distanceSqrd));
+        //                weights[numPoint] = weight;
+        //                coords[numPoint] = new Vector2(coordX, coordY);
+        //                numPoint++;
+        //                weighSum += weight;
+        //            }
+        //        }
+        //    for (int i = 0; i < numPoint; ++i)            
+        //        weights[i] /= weighSum;            
+        //}
     }
 
     public class Droplet
