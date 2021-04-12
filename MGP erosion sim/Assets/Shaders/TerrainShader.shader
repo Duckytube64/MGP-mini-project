@@ -53,7 +53,7 @@ Shader "Custom/TerrainShader"
             float slope = 1 - IN.worldNormal.y;
             float grassBlendHeight = _GrassSlopeThreshold * (1 - _GrassBlendAmount);
             float grassWeight = 1 - saturate((slope - grassBlendHeight) / (_GrassSlopeThreshold - grassBlendHeight));
-            o.Albedo = baseColor * grassWeight + _RockColor * (1 - grassWeight);
+            o.Albedo = _GrassColor * grassWeight + _RockColor * (1 - grassWeight);
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
