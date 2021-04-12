@@ -9,39 +9,23 @@ namespace MiniProject
 {
     public class SettingsMenu : MonoBehaviour
     {
-        string[] pars = new string[12] {"Inertia", "Gravity", "Evaporation", "Carry capacity", "Minimal slope",
-            "Deposition speed", "Erosion", "Erosion radius", "Update rate", "Total droplets", "Droplet lifetime","File number"};
+        string[] pars = new string[11] {"Inertia", "Gravity", "Evaporation", "Carry capacity", "Minimal slope",
+            "Deposition speed", "Erosion", "Erosion radius", "Update rate", "Total droplets", "Droplet lifetime"};
 
-        InputField[] inputfields = new InputField[11];
-        float[] vals = new float[12];
+        InputField[] inputfields = new InputField[12];
 
         private void Start()
         {
-            // Read default parameter settings
-            vals[0] = Vars.pInertia;
-            vals[1] = Vars.pGravity;
-            vals[2] = Vars.pEvaporation;
-            vals[3] = Vars.pCapacity;
-            vals[4] = Vars.pMinSlope;
-            vals[5] = Vars.pDeposition;
-            vals[6] = Vars.pErosion;
-            vals[7] = Vars.pErosionRadius;
-            vals[8] = Vars.dropletsPerUpdate;
-            vals[9] = Vars.totalDroplets;
-            vals[10] = Vars.nrIterations;
-            vals[11] = Vars.fileIndex;
-
             Transform parameters = transform.Find("Parameters");
             for (int i = 0; i < pars.Length; i++)
             {
                 Transform par = parameters.Find(pars[i]);
                 InputField inputfield = par.Find("InputField").GetComponent<InputField>();
                 inputfields[i] = inputfield;
-                inputfield.text = vals[i].ToString();
             }
             InputField fileNrInput = transform.Find("File Number").GetComponent<InputField>();
             inputfields[11] = fileNrInput;
-            fileNrInput.text = vals[11].ToString();
+            fileNrInput.text = Vars.fileIndex.ToString();
         }
 
         public void Update()
@@ -64,7 +48,7 @@ namespace MiniProject
 
         public void loadTerrain()
         {
-            string a = "Heightmaps/HM_" + inputfields[11];
+            string a = "Heightmaps/HM_" + Vars.fileIndex;
             Texture2D texture = new Texture2D(2, 2);
             texture = (Texture2D)Resources.Load(a);
             if (texture != null)
@@ -78,13 +62,12 @@ namespace MiniProject
         {
             if (fileNumber != "")
             {
-                int temp = Mathf.Clamp(int.Parse(fileNumber), 0, 1);
-                Vars.pInertia = temp;
-                inputfields[11].text = temp.ToString();
+                Vars.fileIndex = int.Parse(fileNumber);
+                inputfields[11].text = fileNumber;
             }
             else
             {
-                inputfields[11].text = Vars.pInertia.ToString();
+                inputfields[11].text = Vars.fileIndex.ToString();
             }
         }
 
