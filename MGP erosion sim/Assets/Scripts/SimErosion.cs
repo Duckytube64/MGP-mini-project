@@ -27,19 +27,20 @@ namespace MiniProject
     public class SimErosion
     {        
         private float[] updatedHeights;
-        // Start is called before the first frame update
+        bool[] updatedPixel;
+
         public SimErosion(float[] Heights, int ImgRes)
         {
             Vars.heights = Heights;
             Vars.imgRes = ImgRes;
             updatedHeights = (float[])Heights.Clone();
+            updatedPixel = new bool[updatedHeights.Length];
         }
 
-        // Update is called once per frame
-        public void Update()
+        
+        public void Update(int miniIts = 100, bool ret = false)
         {
-            bool[] updatedPixel = new bool[updatedHeights.Length];
-            for (int i = 0; i < Vars.dropletsPerUpdate && Vars.currentDroplets < Vars.totalDroplets; i++)
+            for (int i = 0; i < miniIts; i++)
             {
                 Droplet d = new Droplet();
                 for (int j = 0; j < Vars.nrIterations; j++)
@@ -80,12 +81,12 @@ namespace MiniProject
                     {
                         // Deposit sediment                        
                         float depositAmount = (d.sediment - c) * Vars.pDeposition;
-                        applyDeposition(ref d, ref updatedHeights, ref updatePixel, depositAmount, newHeight);
+                        applyDeposition(ref d, ref updatedHeights, ref updatedPixel, depositAmount, newHeight);
                     }
                     else if (heightDiff > 0)
                     {
                         float depositAmount = Math.Min(heightDiff, d.sediment);
-                        applyDeposition(ref d, ref updatedHeights, ref updatePixel, depositAmount, dHeight, true, oldPos.x, oldPos.y);
+                        applyDeposition(ref d, ref updatedHeights, ref updatedPixel, depositAmount, dHeight, true, oldPos.x, oldPos.y);
                     }
                     else
                     {
@@ -100,7 +101,12 @@ namespace MiniProject
                 }
                 Vars.currentDroplets++;
             }
-            updatedHeights = blurMap(updatedHeights, Vars.imgRes, updatedPixel); ;
+
+            if (ret)
+            {
+                updatedHeights = blurMap(updatedHeights, Vars.imgRes, updatedPixel);
+                updatedPixel = new bool[updatedHeights.Length];
+            }                
         }
 
         public float[] getUpdatedHeights()
@@ -213,7 +219,6 @@ namespace MiniProject
         void applyDeposition(ref Droplet d, ref float[] map, ref bool[] updated, float depositAmount, float currHeight, bool tooHigh = false, float oldX = 0, float oldY = 0)
         {
             float X = d.x, Y = d.y;
-            float heighFactor = 3;
             // We want to deposit before the hill, not on the hill
             if (tooHigh)
             {
@@ -266,8 +271,6 @@ namespace MiniProject
                 float pointDeposition = (float)(depositAmount * weight);
                 int pointIndex = (int)(coords[i].x * Vars.imgRes + coords[i].y);
                 d.sediment -= pointDeposition;
-                if (float.IsNaN(pointDeposition))
-                    pointDeposition = pointDeposition;
                 map[pointIndex] += pointDeposition;
 				updated[pointIndex] = true;
             }

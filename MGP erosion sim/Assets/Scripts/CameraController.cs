@@ -9,7 +9,7 @@ public class CameraController : MonoBehaviour
 
     void Start()
     {
-        transform.LookAt(target);
+        //transform.LookAt(target);
     }
 
     // Update is called once per frame
