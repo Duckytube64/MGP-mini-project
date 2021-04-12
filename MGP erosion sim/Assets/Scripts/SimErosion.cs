@@ -10,10 +10,10 @@ namespace MiniProject
         // World settings
         public static float pInertia = 0.0125f, pGravity = 4, pEvaporation = 0.01f;
         // Erosion settings
-        public static float pCapacity = 0.4f, pMinSlope = 0.001f, pDeposition = 0.1f, pErosion = 0.1f;
-        public static int pErosionRadius = 2;
+        public static float pCapacity = 0.02f, pMinSlope = 0.1f, pDeposition = 0.01f, pErosion = 0.1f;
+        public static int pErosionRadius = 4;
         // Simulation duration settings
-        public static int dropletsPerUpdate = 100, totalDroplets = 100000, nrIterations = 40, currentDroplets = 0;
+        public static int dropletsPerUpdate = 1000, totalDroplets = 1000000, nrIterations = 20, currentDroplets = 0;
 
         public static float initDropletWater = 1;
         public static float initDropletvelocity = 1;
@@ -21,6 +21,7 @@ namespace MiniProject
         public static int imgRes;
 
         public static bool pause = true;
+        public static bool reset = false;
     }
 
     public class SimErosion
@@ -37,6 +38,7 @@ namespace MiniProject
         // Update is called once per frame
         public void Update()
         {
+            bool[] updatedPixel = new bool[updatedHeights.Length];
             for (int i = 0; i < Vars.dropletsPerUpdate && Vars.currentDroplets < Vars.totalDroplets; i++)
             {
                 Droplet d = new Droplet();
@@ -78,19 +80,18 @@ namespace MiniProject
                     {
                         // Deposit sediment                        
                         float depositAmount = (d.sediment - c) * Vars.pDeposition;
-                        applyDeposition(ref d, ref updatedHeights, depositAmount, newHeight);
+                        applyDeposition(ref d, ref updatedHeights, ref updatePixel, depositAmount, newHeight);
                     }
                     else if (heightDiff > 0)
                     {
                         float depositAmount = Math.Min(heightDiff, d.sediment);
-                        applyDeposition(ref d, ref updatedHeights, depositAmount, dHeight, true, oldPos.x, oldPos.y);
+                        applyDeposition(ref d, ref updatedHeights, ref updatePixel, depositAmount, dHeight, true, oldPos.x, oldPos.y);
                     }
                     else
                     {
                         // Erode all points inside the radius
                         float erosionAmount = Math.Min((c - d.sediment) * Vars.pErosion, -heightDiff);
-                        // d.sediment += erosionAmount;
-                        applyErosion(ref d, ref updatedHeights, erosionAmount);
+                        applyErosion(ref d, ref updatedHeights, ref updatedPixel, erosionAmount);
                     }
 
                     // update droplet velocity and water amount
@@ -99,11 +100,44 @@ namespace MiniProject
                 }
                 Vars.currentDroplets++;
             }
+            updatedHeights = blurMap(updatedHeights, Vars.imgRes, updatedPixel); ;
         }
 
         public float[] getUpdatedHeights()
         {
             return updatedHeights;
+        }
+
+        float[] blurMap(float[] map, int mapSize, bool[] applyBlur, float blurFactor = 0.005f)
+        {
+            float[] blurredMap = (float[])map.Clone();
+            int[,] kernel = new int[,] { { 1, 2, 1 }, { 2, 4, 2 }, { 1, 2, 1 } };
+
+            for (int row = 0; row < mapSize; row++)
+            {
+                for (int col = 0; col < mapSize; col++)
+                {
+                    if (!applyBlur[row * mapSize + col])
+                        continue;
+                    float sum = 0;
+                    float sumKernel = 0;
+                    for (int j = -1; j <= 1; j++)
+                    {
+                        for (int i = -1; i <= 1; i++)
+                        {
+                            if ((row + j) >= 0 && (row + j) < mapSize && (col + i) >= 0 && (col + i) < mapSize)
+                            {
+                                float height = map[(row + j) * mapSize + (col + i)];
+                                sum += height * kernel[i + 1, j + 1];
+                                sumKernel += kernel[i + 1, j + 1];
+                            }
+                        }
+                    }
+
+                    blurredMap[row * mapSize + col] = blurFactor * (sum / sumKernel) + (1 - blurFactor) * map[row * mapSize + col];
+                }
+            }
+            return blurredMap;
         }
 
         void computeGradientHeight(float[] mapHeights, ref Droplet d, ref float dropletHeight, ref Vector2 gradient)
@@ -128,7 +162,7 @@ namespace MiniProject
                 (xy1 - xy) * (1 - d.u) + (x1y1 - x1y) * d.u);
         }
 
-        void applyErosion(ref Droplet d, ref float[] map, float erosionAmount)
+        void applyErosion(ref Droplet d, ref float[] map, ref bool[] updated, float erosionAmount)
         {
             int radius = Vars.pErosionRadius;
             double[] weights = new double[(int)Math.Pow(2 * radius + 1, 2)];
@@ -163,6 +197,7 @@ namespace MiniProject
                 weights[i] /= weighSum;
                 float pointErosion = (float)(erosionAmount * weights[i]);
                 int pointIndex = (int)(coords[i].x * Vars.imgRes + coords[i].y);
+                updated[pointIndex] = true;
                 if (pointErosion > map[pointIndex])
                 {
                     d.sediment += map[pointIndex];
@@ -175,7 +210,7 @@ namespace MiniProject
             }
         }
 
-        void applyDeposition(ref Droplet d, ref float[] map, float depositAmount, float currHeight, bool tooHigh = false, float oldX = 0, float oldY = 0)
+        void applyDeposition(ref Droplet d, ref float[] map, ref bool[] updated, float depositAmount, float currHeight, bool tooHigh = false, float oldX = 0, float oldY = 0)
         {
             float X = d.x, Y = d.y;
             float heighFactor = 3;
@@ -234,6 +269,7 @@ namespace MiniProject
                 if (float.IsNaN(pointDeposition))
                     pointDeposition = pointDeposition;
                 map[pointIndex] += pointDeposition;
+				updated[pointIndex] = true;
             }
         }
 

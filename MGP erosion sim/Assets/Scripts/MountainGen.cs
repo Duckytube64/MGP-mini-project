@@ -49,7 +49,7 @@ namespace MiniProject
                 {
                     //Add each new vertex in the plane
                     float height = newHeights[i * imgRes + j] * 80;
-                    verts.Add(new Vector3(i, height, j) * scale);
+                    verts.Add(new Vector3(i - imgRes / 2, height, j - imgRes / 2));
                     //Skip if a new square on the plane hasn't been formed
                     if (i == 0 || j == 0) continue;
                     //Adds the index of the three vertices in order to make up each of the two tris
@@ -78,11 +78,19 @@ namespace MiniProject
         // Update is called once per frame
         void Update()
         {
+            if (Vars.reset)
+            {
+                updateMesh(heights);
+                simErosion = new SimErosion(heights, imgRes);
+                Vars.reset = false;
+                Vars.pause = true;
+            }
             if (!Vars.pause)
             {
                 simErosion.Update();
                 updateMesh(simErosion.getUpdatedHeights());
             }
         }
+
     }
 }
