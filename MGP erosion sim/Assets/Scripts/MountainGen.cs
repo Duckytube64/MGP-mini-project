@@ -84,6 +84,8 @@ namespace MiniProject
                 simErosion = new SimErosion(heights, imgRes);
                 Vars.reset = false;
                 Vars.pause = true;
+                Vars.currentDroplets = 0;
+                updatedDroplets = 0;
             }
             if (!Vars.pause)
             {

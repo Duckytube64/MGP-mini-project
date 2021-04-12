@@ -10,7 +10,7 @@ namespace MiniProject
         // World settings
         public static float pInertia = 0.0125f, pGravity = 4, pEvaporation = 0.01f;
         // Erosion settings
-        public static float pCapacity = 0.02f, pMinSlope = 0.1f, pDeposition = 0.01f, pErosion = 0.1f;
+        public static float pCapacity = 0.2f, pMinSlope = 0.1f, pDeposition = 0.01f, pErosion = 0.1f;
         public static int pErosionRadius = 4;
         // Simulation duration settings
         public static int dropletsPerUpdate = 1000, totalDroplets = 1000000, nrIterations = 20, currentDroplets = 0;
