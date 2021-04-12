@@ -22,6 +22,7 @@ namespace MiniProject
         public static System.Random randomGen = new System.Random();
 
         public static bool pause = true;
+        public static bool reset = false;
     }
 
     public class SimErosion
