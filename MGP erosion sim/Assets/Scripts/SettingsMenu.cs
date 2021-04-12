@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
+using UnityEditor;
 using UnityEngine.UI;
 
 namespace MiniProject
@@ -53,6 +55,20 @@ namespace MiniProject
 
         public void resetScene()
         {
+            Vars.reset = true;
+        }
+
+        public void loadTerrain()
+        {
+            Texture2D texture = new Texture2D(2, 2);
+            string path = EditorUtility.OpenFilePanel("Overwrite with png", "", "png");
+            if (path.Length != 0)
+            {
+                var fileContent = File.ReadAllBytes(path);
+                Debug.Log(fileContent.Length);
+                texture.LoadImage(fileContent);
+            }
+            Vars.heightMap = texture;
             Vars.reset = true;
         }
 

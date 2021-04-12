@@ -34,6 +34,7 @@ namespace MiniProject
             plane.GetComponent<MeshRenderer>().material = mountain_Material;
 
             updateMesh(heights);
+            Vars.heightMap = hMap;
 
             simErosion = new SimErosion(heights, imgRes);
         }
@@ -81,10 +82,18 @@ namespace MiniProject
         {
             if (Vars.reset)
             {
+                for (int i = 0; i < imgRes; i++)
+                    for (int j = 0; j < imgRes; j++)
+                    {
+                        //Copy heightmap to heigh array
+                        float height = Vars.heightMap.GetPixel(i, j).grayscale;
+                        heights[i * imgRes + j] = height;
+                    }
                 updateMesh(heights);
                 simErosion = new SimErosion(heights, imgRes);
                 Vars.reset = false;
                 Vars.pause = true;
+                Vars.currentDroplets = 0;
             }
             if (!Vars.pause)
             {

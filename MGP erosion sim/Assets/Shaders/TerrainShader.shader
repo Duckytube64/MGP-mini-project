@@ -3,6 +3,7 @@ Shader "Custom/TerrainShader"
     Properties
     {
         _GrassColor("Grass", Color) = (0,1,0,1)
+        _GrassTex("Base texture", 2D) = "white" {}
         _RockColor("Rock", Color) = (0.5, 0.5, 0.5, 1)
         _GrassSlopeThreshold("Grass Slope Threshold", Range(0,1)) = .5
         _GrassBlendAmount("Grass Blend Amount", Range(0,1)) = .5
@@ -25,6 +26,7 @@ Shader "Custom/TerrainShader"
         {
             float3 worldPos;
             float3 worldNormal;
+            float2 uv_MainTex;
         };
 
         half _Glossiness;
@@ -32,6 +34,7 @@ Shader "Custom/TerrainShader"
         half _MaxHeight;
         half _GrassSlopeThreshold;
         half _GrassBlendAmount;
+        sampler2D _GrassTex;
         fixed4 _GrassColor;
         fixed4 _RockColor;
 
@@ -46,10 +49,11 @@ Shader "Custom/TerrainShader"
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
             // Albedo comes from a texture tinted by color
+            fixed3 baseColor = tex2D(_GrassTex, IN.uv_MainTex).rgb;
             float slope = 1 - IN.worldNormal.y;
             float grassBlendHeight = _GrassSlopeThreshold * (1 - _GrassBlendAmount);
             float grassWeight = 1 - saturate((slope - grassBlendHeight) / (_GrassSlopeThreshold - grassBlendHeight));
-            o.Albedo = _GrassColor * grassWeight + _RockColor * (1 - grassWeight);
+            o.Albedo = baseColor * grassWeight + _RockColor * (1 - grassWeight);
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
