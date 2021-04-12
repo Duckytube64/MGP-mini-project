@@ -29,7 +29,7 @@ namespace MiniProject
             vals[8] = Vars.dropletsPerUpdate;
             vals[9] = Vars.totalDroplets;
             vals[10] = Vars.nrIterations;
-            vals[11] = Vars.nrIterations;
+            vals[11] = Vars.fileIndex;
 
             Transform parameters = transform.Find("Parameters");
             for (int i = 0; i < pars.Length; i++)
@@ -64,7 +64,7 @@ namespace MiniProject
 
         public void loadTerrain()
         {
-            string a = "Heightmaps/HM_" + vals[11];
+            string a = "Heightmaps/HM_" + Vars.fileIndex;
             Texture2D texture = new Texture2D(2, 2);
             texture = (Texture2D)Resources.Load(a);
             if (texture != null)
