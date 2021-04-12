@@ -74,6 +74,7 @@ namespace MiniProject
             plane.GetComponent<MeshFilter>().mesh = procMesh; //Assign Mesh object to MeshFilter          
         }
 
+        int updatedDroplets = 0;
         // Update is called once per frame
         void Update()
         {
@@ -83,11 +84,28 @@ namespace MiniProject
                 simErosion = new SimErosion(heights, imgRes);
                 Vars.reset = false;
                 Vars.pause = true;
+                Vars.currentDroplets = 0;
+                updatedDroplets = 0;
             }
             if (!Vars.pause)
             {
-                simErosion.Update();
-                updateMesh(simErosion.getUpdatedHeights());
+                if (updatedDroplets + 100 > Vars.dropletsPerUpdate)
+                {
+                    simErosion.Update(updatedDroplets - Vars.dropletsPerUpdate, true);
+                    updateMesh(simErosion.getUpdatedHeights());
+                    updatedDroplets = 0;
+                }
+                else if (Vars.currentDroplets + 100 > Vars.totalDroplets)
+                {
+                    simErosion.Update(Vars.currentDroplets - Vars.totalDroplets, true);
+                    updateMesh(simErosion.getUpdatedHeights());
+                    updatedDroplets = 0;
+                }
+                else
+                {
+                    simErosion.Update();
+                    updatedDroplets += 100;
+                }
             }
         }
 

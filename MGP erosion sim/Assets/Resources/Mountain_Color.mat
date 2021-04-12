@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Mountain_Color
-  m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
+  m_Shader: {fileID: 4800000, guid: c506b5271844cb249ac99609ab01b464, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -71,6 +71,8 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.041
     - _GlossyReflections: 1
+    - _GrassBlendAmount: 0.5
+    - _GrassSlopeThreshold: 0.5
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
@@ -81,6 +83,8 @@ Material:
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
-    - _Color: {r: 0.5506855, g: 0.6981132, b: 0.49724102, a: 1}
+    - _Color: {r: 0.4716981, g: 0.3818744, b: 0.22917409, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _GrassColor: {r: 0.11764706, g: 0.3018868, b: 0.11764706, a: 1}
+    - _RockColor: {r: 0.4433962, g: 0.395777, b: 0.3032663, a: 1}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
