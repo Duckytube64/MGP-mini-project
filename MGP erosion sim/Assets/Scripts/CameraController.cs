@@ -23,6 +23,9 @@ public class CameraController : MonoBehaviour
         if (Input.GetMouseButton(0))
         {
             transform.Rotate(Vector3.down, mouseDelta.x * speed * Time.deltaTime);
+        }
+        if (Input.GetMouseButton(1))
+        {
             transform.Rotate(Vector3.left, -mouseDelta.y * speed * Time.deltaTime);
         }
         float scrollAmount = Input.GetAxis("Mouse ScrollWheel");
