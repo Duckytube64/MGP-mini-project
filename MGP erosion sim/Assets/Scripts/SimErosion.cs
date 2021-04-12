@@ -8,12 +8,12 @@ namespace MiniProject
     public static class Vars
     {
         // World settings
-        public static float pInertia = 0.0125f, pGravity = 4, pEvaporation = 0.01f;
+        public static float pInertia = 0.125f, pGravity = 10, pEvaporation = 0.01f;
         // Erosion settings
-        public static float pCapacity = 0.2f, pMinSlope = 0.1f, pDeposition = 0.01f, pErosion = 0.1f;
-        public static int pErosionRadius = 4;
+        public static float pCapacity = 0.2f, pMinSlope = 0.1f, pDeposition = 0.01f, pErosion = 0.2f;
+        public static int pErosionRadius = 3;
         // Simulation duration settings
-        public static int dropletsPerUpdate = 1000, totalDroplets = 1000000, nrIterations = 20, currentDroplets = 0;
+        public static int dropletsPerUpdate = 1000, totalDroplets = 100000, nrIterations = 20, currentDroplets = 0;
 
         public static float initDropletWater = 1;
         public static float initDropletvelocity = 1;

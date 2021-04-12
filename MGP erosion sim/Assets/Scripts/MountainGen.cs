@@ -97,7 +97,7 @@ namespace MiniProject
                 }
                 else if (Vars.currentDroplets + 100 > Vars.totalDroplets)
                 {
-                    simErosion.Update(Vars.currentDroplets - Vars.totalDroplets, true);
+                    simErosion.Update(Vars.totalDroplets - Vars.currentDroplets, true);
                     updateMesh(simErosion.getUpdatedHeights());
                     updatedDroplets = 0;
                 }
