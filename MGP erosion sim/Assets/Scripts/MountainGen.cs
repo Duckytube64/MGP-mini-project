@@ -95,16 +95,9 @@ namespace MiniProject
                 Vars.currentDroplets = 0;
                 updatedDroplets = 0;
             }
-            float[] map;
-
+            float[] map = Vars.view ? simErosion.getUpdatedHeights() : heights;
             if (!Vars.pause)
             {
-                if (Vars.view)
-                {
-                    map = simErosion.getUpdatedHeights();
-                } else {
-                    map = heights;
-                }
                 if (updatedDroplets + 100 > Vars.dropletsPerUpdate)
                 {
                     simErosion.Update(updatedDroplets - Vars.dropletsPerUpdate, true);
@@ -122,6 +115,9 @@ namespace MiniProject
                     simErosion.Update();
                     updatedDroplets += 100;
                 }
+            } else
+            {
+                updateMesh(map);
             }
         }
 
