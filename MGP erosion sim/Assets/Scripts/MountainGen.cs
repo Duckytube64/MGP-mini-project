@@ -11,10 +11,12 @@ namespace MiniProject
         int imgRes;
         float[] heights;
         SimErosion simErosion;
+        Mesh procMesh;
 
         // Start is called before the first frame update
         void Start()
         {
+            procMesh = new Mesh();
             string a = "Heightmaps/HM_" + Vars.fileIndex;
             hMap = (Texture2D)Resources.Load(a);
             imgRes = hMap.width;
@@ -69,7 +71,6 @@ namespace MiniProject
 
             //Create and assign mesh to terrain GO
             GameObject plane = GameObject.Find("ProcPlane");
-            Mesh procMesh = new Mesh();
             procMesh.vertices = verts.ToArray(); //Assign verts, uvs, and tris to the mesh
             procMesh.uv = uvs;
             procMesh.triangles = tris.ToArray();
