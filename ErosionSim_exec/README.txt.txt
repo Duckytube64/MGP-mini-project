@@ -1,7 +1,7 @@
-Project made by 
-Stefan Steven
-Jeroen Hijzelendoorn 6262279
-For the course of Game Physics (MGP) at the University of Utrecht
+This project was made by 
+Stefan Stan
+Jeroen Hijzelendoorn
+for the course of Game Physics (MGP) at the University of Utrecht
 
 This erosion simulation is based on the following paper:
 https://www.firespark.de/resources/downloads/implementation%20of%20a%20methode%20for%20hydraulic%20erosion.pdf
